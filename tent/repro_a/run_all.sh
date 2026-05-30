@@ -61,9 +61,15 @@ for arch in "${ARCHS[@]}"; do
     for seed in "${SEEDS[@]}"; do
       i=$(( i + 1 ))
       save_dir="${OUT_ROOT}/${arch}/${method}/seed${seed}"
-      if [[ "${SKIP_EXISTING}" == "1" ]] && compgen -G "${save_dir}/*.txt" > /dev/null; then
-        echo "[run_all] (${i}/${total}) skip (log exists): ${save_dir}"
-        continue
+      # Skip only runs that actually COMPLETED. A full sweep logs 75 "error %"
+      # lines (5 severities x 15 corruptions); a crashed run leaves a header-only
+      # log, so a plain file-existence check would wrongly skip it.
+      if [[ "${SKIP_EXISTING}" == "1" ]]; then
+        done_lines=$(cat "${save_dir}"/*.txt 2>/dev/null | grep -c "error %" || true)
+        if [[ "${done_lines:-0}" -ge 75 ]]; then
+          echo "[run_all] (${i}/${total}) skip (complete, ${done_lines} results): ${save_dir}"
+          continue
+        fi
       fi
       echo "[run_all] (${i}/${total}) arch=${arch} method=${method} seed=${seed} -> ${save_dir}"
       "$PY" cifar10c.py --cfg "cfgs/${method}.yaml" \

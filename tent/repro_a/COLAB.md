@@ -107,6 +107,12 @@ if not os.path.exists(f'{CIFAR_C}/labels.npy'):
 land directly in `<DATA_DIR>/cifar10c/*.npy`, exactly where robustbench looks.
 Expect ~19–20 `.npy` files (15 needed + a few extras + `labels.npy`).
 
+> The notebook version of this cell **re-downloads if the existing files are
+> corrupt**, not just if they're missing — it `np.load`s `labels.npy` and
+> `gaussian_noise.npy` and only trusts them if they actually open. This matters
+> because robustbench's broken Drive downloader leaves HTML files that *exist* but
+> won't load; a plain "skip if present" guard would keep using them.
+
 ## 6. Build the Python 3.8 environment
 
 ```python
@@ -140,11 +146,10 @@ Then verify the env sees the GPU and can load the checkpoints:
 ```
 
 - `OUT_ROOT` on Drive ⇒ each run's log is persisted as it finishes.
-- `SKIP_EXISTING=1` ⇒ re-running the cell after a disconnect skips dirs that
-  already hold a `.txt`.
-- **Gotcha:** a *crashed* run leaves a partial log that `SKIP_EXISTING=1` would
-  wrongly skip. Clear partials before resuming (`rm -rf {OUT_ROOT}/_smoke` and any
-  incomplete run dir — a complete run's log ends with 15 `error %` lines).
+- `SKIP_EXISTING=1` ⇒ re-running the cell after a disconnect skips only runs that
+  **completed** — `run_all.sh` counts the 75 `error %` lines a full sweep logs
+  (5 severities × 15 corruptions), so a crashed/header-only log is *not* skipped;
+  it re-runs. No manual cleanup of partial runs needed.
 
 ## 9. Analyze (stock Colab Python — no venv)
 
