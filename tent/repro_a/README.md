@@ -21,6 +21,11 @@ the *example* numbers, not the paper's own tables — call this out in the blog.
 | `run_all.sh` (the 12 runs) | **CUDA GPU box** | `cifar10c.py` calls `.cuda()` unconditionally; `requirements.txt` pins `torch==1.8.1` (no Apple-Silicon/MPS). Will not run on macOS. |
 | `parse_logs.py`, `make_tables.py` | **anywhere (laptop OK)** | Pure text/CSV + plotting; no torch. |
 
+> **On Google Colab?** Open [`Tent_Colab.ipynb`](Tent_Colab.ipynb) (runnable
+> cells) or read [`COLAB.md`](COLAB.md) (the same flow explained) — they handle the
+> Python-3.8 environment the upstream pins need, Drive persistence, and
+> disconnect-resume.
+
 ## 1. Run the experiments (on the GPU box)
 
 From the `tent/` directory:
