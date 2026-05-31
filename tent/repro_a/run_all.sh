@@ -71,6 +71,11 @@ for arch in "${ARCHS[@]}"; do
           continue
         fi
       fi
+      # Fresh attempt: drop any partial log left by a previous crash so the
+      # completion count stays accurate (otherwise two partials could sum to
+      # >=75 and be falsely treated as complete on the next resume).
+      mkdir -p "${save_dir}"
+      rm -f "${save_dir}"/*.txt 2>/dev/null || true
       echo "[run_all] (${i}/${total}) arch=${arch} method=${method} seed=${seed} -> ${save_dir}"
       "$PY" cifar10c.py --cfg "cfgs/${method}.yaml" \
         MODEL.ARCH "${arch}" \
