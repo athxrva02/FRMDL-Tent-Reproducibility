@@ -126,10 +126,9 @@ def main():
         w.writerows(rows)
 
     print(f"[parse_logs] wrote {len(rows)} rows to {args.out}")
-    # Expected on a complete run: 2 arch x 3 method x 2 seed x 5 sev x 15 corr = 900
-    if len(rows) != 900:
-        print(f"[parse_logs] note: {len(rows)} rows (expected 900 for the full "
-              f"12-run matrix; fewer is fine for partial/smoke runs).")
+    # Row count depends on scope, so we report it rather than assert a fixed
+    # number: Student A's reduced reproduction is 4 runs x 15 corruptions
+    # (severity 5) = 60 rows; Student B's ablation sweeps add more.
 
 
 if __name__ == "__main__":

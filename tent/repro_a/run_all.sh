@@ -1,14 +1,15 @@
 #!/usr/bin/env bash
 #
 # Student A — "Reproduced" criterion: re-run the three upstream Tent configs
-# end-to-end on both WRN architectures and two seeds (12 runs total).
+# end-to-end on WRN-28-10 (Standard) at severity 5, plus one extra tent run at
+# seed 2 for a variance number (4 runs total -- the reduced-scope plan).
 #
 # Runs on a CUDA machine (cifar10c.py calls .cuda() unconditionally). Each run
-# already sweeps all 5 severities x 15 corruption types, so the severity-trend
-# deliverable falls out of the same runs -- no extra runs needed.
+# evaluates all 15 corruption types at severity 5 only (CORRUPTION.SEVERITY [5]
+# is passed explicitly below; the cfg default would sweep all 5 severities).
 #
 # Usage (from the tent/ directory):
-#   bash repro_a/run_all.sh            # full 12-run matrix
+#   bash repro_a/run_all.sh            # full 4-run set
 #   bash repro_a/run_all.sh --smoke    # quick <2 min sanity check only
 #
 # Environment knobs (all optional):
@@ -36,9 +37,10 @@ PY="${PY:-python}"
 OUT_ROOT="${OUT_ROOT:-./output/A}"
 SKIP_EXISTING="${SKIP_EXISTING:-0}"
 
-ARCHS=("Standard" "Hendrycks2020AugMix_WRN")
-METHODS=("source" "norm" "tent")
-SEEDS=(1 2)
+ARCH="Standard"
+# (method seed) jobs for the reduced plan: source/norm/tent at seed 1, plus a
+# tent seed-2 run for the variance deliverable. Only tent gets a second seed.
+JOBS=("source 1" "norm 1" "tent 1" "tent 2")
 
 if [[ "${1:-}" == "--smoke" ]]; then
   echo "[run_all] smoke test: source / Standard / gaussian_noise sev5 / 1000 ex"
@@ -54,35 +56,33 @@ if [[ "${1:-}" == "--smoke" ]]; then
   exit 0
 fi
 
-total=$(( ${#ARCHS[@]} * ${#METHODS[@]} * ${#SEEDS[@]} ))
+total=${#JOBS[@]}
 i=0
-for arch in "${ARCHS[@]}"; do
-  for method in "${METHODS[@]}"; do
-    for seed in "${SEEDS[@]}"; do
-      i=$(( i + 1 ))
-      save_dir="${OUT_ROOT}/${arch}/${method}/seed${seed}"
-      # Skip only runs that actually COMPLETED. A full sweep logs 75 "error %"
-      # lines (5 severities x 15 corruptions); a crashed run leaves a header-only
-      # log, so a plain file-existence check would wrongly skip it.
-      if [[ "${SKIP_EXISTING}" == "1" ]]; then
-        done_lines=$(cat "${save_dir}"/*.txt 2>/dev/null | grep -c "error %" || true)
-        if [[ "${done_lines:-0}" -ge 75 ]]; then
-          echo "[run_all] (${i}/${total}) skip (complete, ${done_lines} results): ${save_dir}"
-          continue
-        fi
-      fi
-      # Fresh attempt: drop any partial log left by a previous crash so the
-      # completion count stays accurate (otherwise two partials could sum to
-      # >=75 and be falsely treated as complete on the next resume).
-      mkdir -p "${save_dir}"
-      rm -f "${save_dir}"/*.txt 2>/dev/null || true
-      echo "[run_all] (${i}/${total}) arch=${arch} method=${method} seed=${seed} -> ${save_dir}"
-      "$PY" cifar10c.py --cfg "cfgs/${method}.yaml" \
-        MODEL.ARCH "${arch}" \
-        RNG_SEED "${seed}" \
-        SAVE_DIR "${save_dir}"
-    done
-  done
+for job in "${JOBS[@]}"; do
+  read -r method seed <<< "${job}"
+  i=$(( i + 1 ))
+  save_dir="${OUT_ROOT}/${ARCH}/${method}/seed${seed}"
+  # Skip only runs that actually COMPLETED. A complete run logs 15 "error %"
+  # lines (15 corruptions at severity 5); a crashed run leaves a header-only
+  # log, so a plain file-existence check would wrongly skip it.
+  if [[ "${SKIP_EXISTING}" == "1" ]]; then
+    done_lines=$(cat "${save_dir}"/*.txt 2>/dev/null | grep -c "error %" || true)
+    if [[ "${done_lines:-0}" -ge 15 ]]; then
+      echo "[run_all] (${i}/${total}) skip (complete, ${done_lines} results): ${save_dir}"
+      continue
+    fi
+  fi
+  # Fresh attempt: drop any partial log left by a previous crash so the
+  # completion count stays accurate (otherwise two partials could sum to
+  # >=15 and be falsely treated as complete on the next resume).
+  mkdir -p "${save_dir}"
+  rm -f "${save_dir}"/*.txt 2>/dev/null || true
+  echo "[run_all] (${i}/${total}) arch=${ARCH} method=${method} seed=${seed} -> ${save_dir}"
+  "$PY" cifar10c.py --cfg "cfgs/${method}.yaml" \
+    MODEL.ARCH "${ARCH}" \
+    RNG_SEED "${seed}" \
+    CORRUPTION.SEVERITY "[5]" \
+    SAVE_DIR "${save_dir}"
 done
 
 echo "[run_all] all ${total} runs complete. Next: python repro_a/parse_logs.py --root ${OUT_ROOT}"
