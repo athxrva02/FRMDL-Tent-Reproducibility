@@ -1,4 +1,4 @@
-# Student A — Reproduced
+# Tent
 
 Re-run the three upstream Tent configs (`source`, `norm`, `tent`) end-to-end on
 WRN-28-10 (`Standard`) at **severity 5**, plus one extra `tent` run at seed 2 for
