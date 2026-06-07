@@ -1,0 +1,33 @@
+[26/06/06 14:17:52] [conf.py:  208]: PyTorch Version: torch=1.8.1+cu111, cuda=11.1, cudnn=8005
+[26/06/06 14:17:52] [conf.py:  210]: BN:
+  EPS: 1e-05
+  MOM: 0.1
+CKPT_DIR: ./ckpt
+CORRUPTION:
+  DATASET: cifar10
+  NUM_EX: 1000
+  SEVERITY: [5]
+  TYPE: ['gaussian_noise']
+CUDNN:
+  BENCHMARK: True
+DATA_DIR: ./data
+DESC: 
+LOG_DEST: source_260606_141752.txt
+LOG_TIME: 260606_141752
+MODEL:
+  ADAPTATION: source
+  ARCH: Standard
+  EPISODIC: False
+OPTIM:
+  BETA: 0.9
+  DAMPENING: 0.0
+  LR: 0.001
+  METHOD: Adam
+  MOMENTUM: 0.9
+  NESTEROV: True
+  STEPS: 1
+  WD: 0.0
+RNG_SEED: 1
+SAVE_DIR: /content/drive/MyDrive/frmdl_tent/output_A/_smoke
+TEST:
+  BATCH_SIZE: 200
