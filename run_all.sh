@@ -8,15 +8,16 @@
 # evaluates all 15 corruption types at severity 5 only (CORRUPTION.SEVERITY [5]
 # is passed explicitly below; the cfg default would sweep all 5 severities).
 #
-# Usage (from the tent/ directory):
-#   bash repro_a/run_all.sh            # full 4-run set
-#   bash repro_a/run_all.sh --smoke    # quick <2 min sanity check only
+# Usage (from the project root):
+#   bash run_all.sh            # full 4-run set
+#   bash run_all.sh --smoke    # quick <2 min sanity check only
 #
 # Environment knobs (all optional):
 #   PY            python to use         (default: python; on Colab set to the
 #                                        venv python, e.g. /content/venv/bin/python)
-#   OUT_ROOT      output root dir       (default: ./output/A; point at Google
-#                                        Drive on Colab so logs survive restarts)
+#   OUT_ROOT      output root dir       (default: <project_root>/output_A; point
+#                                        at Google Drive on Colab so logs survive
+#                                        restarts)
 #   SKIP_EXISTING skip a run whose      (default: 0; set to 1 to resume after a
 #                 SAVE_DIR already       Colab disconnect without redoing runs)
 #                 has a .txt log
@@ -27,14 +28,14 @@
 
 set -euo pipefail
 
-# Resolve repo paths so the script works regardless of where it is invoked from,
-# but cifar10c.py expects to run from tent/, so cd there.
+# Resolve project root from this script's location, then cd into tent/ so that
+# cifar10c.py can be invoked as a plain local module.
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-TENT_DIR="$(dirname "$SCRIPT_DIR")"
+TENT_DIR="$SCRIPT_DIR/tent"
 cd "$TENT_DIR"
 
 PY="${PY:-python}"
-OUT_ROOT="${OUT_ROOT:-./output/A}"
+OUT_ROOT="${OUT_ROOT:-$SCRIPT_DIR/output_A}"
 SKIP_EXISTING="${SKIP_EXISTING:-0}"
 
 ARCH="Standard"
@@ -85,4 +86,4 @@ for job in "${JOBS[@]}"; do
     SAVE_DIR "${save_dir}"
 done
 
-echo "[run_all] all ${total} runs complete. Next: python repro_a/parse_logs.py --root ${OUT_ROOT}"
+echo "[run_all] all ${total} runs complete. Next: python parse_logs.py --root ${OUT_ROOT}"

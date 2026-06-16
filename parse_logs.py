@@ -13,9 +13,9 @@ errors (this matches the README "mean" column).
 This script is pure text processing -- no torch -- so it runs locally on macOS.
 Only the standard library is used.
 
-Usage (from tent/):
-    python repro_a/parse_logs.py                       # reads ./output/A
-    python repro_a/parse_logs.py --root ./output/A --out ./output/A/results.csv
+Usage (from the project root):
+    python parse_logs.py                               # reads ./output_A
+    python parse_logs.py --root ./output_A --out ./output_A/results.csv
 """
 import argparse
 import csv
@@ -33,7 +33,7 @@ SEED_RE = re.compile(r"\bRNG_SEED:\s*(\d+)")
 
 
 def fields_from_path(log_path, root):
-    """Recover (arch, method, seed) from output/A/<arch>/<method>/seed<seed>/."""
+    """Recover (arch, method, seed) from output_A/<arch>/<method>/seed<seed>/."""
     rel = os.path.relpath(log_path, root)
     parts = rel.split(os.sep)
     arch = method = seed = None
@@ -91,10 +91,10 @@ def parse_log(log_path, root):
 def main():
     ap = argparse.ArgumentParser(description=__doc__,
                                  formatter_class=argparse.RawDescriptionHelpFormatter)
-    ap.add_argument("--root", default="./output/A",
-                    help="directory tree of cifar10c.py logs (default ./output/A)")
-    ap.add_argument("--out", default="./output/A/results.csv",
-                    help="output CSV path (default ./output/A/results.csv)")
+    ap.add_argument("--root", default="./output_A",
+                    help="directory tree of cifar10c.py logs (default ./output_A)")
+    ap.add_argument("--out", default="./output_A/results.csv",
+                    help="output CSV path (default ./output_A/results.csv)")
     args = ap.parse_args()
 
     if not os.path.isdir(args.root):

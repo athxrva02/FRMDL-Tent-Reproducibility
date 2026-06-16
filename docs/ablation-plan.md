@@ -2,7 +2,7 @@
 ## Tent: Fully Test-Time Adaptation by Entropy Minimization
 
 **Role:** Ablation study criterion  
-**Depends on:** reproduction runs in `output/A/` (Ablation 1 reuses them zero-cost; reproduction must finish first)  
+**Depends on:** reproduction runs in `output_A/` (Ablation 1 reuses them zero-cost; reproduction must finish first)  
 **Compute:** ~11 short runs on a 5-corruption subset; ~1.5–2 h T4 wall-clock total
 
 ---
@@ -78,9 +78,9 @@ Zero extra GPU runs. The three reproduction outputs at severity 5 over 15 corrup
 are all that is needed:
 
 ```
-output/A/Standard/source/seed1/
-output/A/Standard/norm/seed1/
-output/A/Standard/tent/seed1/
+output_A/Standard/source/seed1/
+output_A/Standard/norm/seed1/
+output_A/Standard/tent/seed1/
 ```
 
 Extract the 5-corruption subset by filtering `parse_logs.py`'s CSV on
@@ -153,12 +153,12 @@ Formula: `LR = 1e-3 × BS / 200`.
 
 | BS | LR | SAVE_DIR |
 |---|---|---|
-| 8 | 4e-5 | output/B/bs/bs008 |
-| 16 | 8e-5 | output/B/bs/bs016 |
-| 32 | 1.6e-4 | output/B/bs/bs032 |
-| 64 | 3.2e-4 | output/B/bs/bs064 |
-| 128 | 6.4e-4 | output/B/bs/bs128 |
-| 200 | 1e-3 | output/B/bs/bs200 |
+| 8 | 4e-5 | output_B/bs/bs008 |
+| 16 | 8e-5 | output_B/bs/bs016 |
+| 32 | 1.6e-4 | output_B/bs/bs032 |
+| 64 | 3.2e-4 | output_B/bs/bs064 |
+| 128 | 6.4e-4 | output_B/bs/bs128 |
+| 200 | 1e-3 | output_B/bs/bs200 |
 
 The `BS=200, LR=1e-3` point matches the reproduction tent run on the same 5 corruptions
 and serves as the consistency check (both must give the same number).
@@ -172,37 +172,37 @@ cd tent/
 python cifar10c.py --cfg cfgs/tent.yaml MODEL.ARCH Standard \
   CORRUPTION.SEVERITY [5] \
   CORRUPTION.TYPE "['gaussian_noise','motion_blur','fog','contrast','jpeg_compression']" \
-  TEST.BATCH_SIZE 8 OPTIM.LR 4e-5 SAVE_DIR output/B/bs/bs008
+  TEST.BATCH_SIZE 8 OPTIM.LR 4e-5 SAVE_DIR ../output_B/bs/bs008
 
 # BS=16, LR=8e-5
 python cifar10c.py --cfg cfgs/tent.yaml MODEL.ARCH Standard \
   CORRUPTION.SEVERITY [5] \
   CORRUPTION.TYPE "['gaussian_noise','motion_blur','fog','contrast','jpeg_compression']" \
-  TEST.BATCH_SIZE 16 OPTIM.LR 8e-5 SAVE_DIR output/B/bs/bs016
+  TEST.BATCH_SIZE 16 OPTIM.LR 8e-5 SAVE_DIR ../output_B/bs/bs016
 
 # BS=32, LR=1.6e-4
 python cifar10c.py --cfg cfgs/tent.yaml MODEL.ARCH Standard \
   CORRUPTION.SEVERITY [5] \
   CORRUPTION.TYPE "['gaussian_noise','motion_blur','fog','contrast','jpeg_compression']" \
-  TEST.BATCH_SIZE 32 OPTIM.LR 1.6e-4 SAVE_DIR output/B/bs/bs032
+  TEST.BATCH_SIZE 32 OPTIM.LR 1.6e-4 SAVE_DIR ../output_B/bs/bs032
 
 # BS=64, LR=3.2e-4
 python cifar10c.py --cfg cfgs/tent.yaml MODEL.ARCH Standard \
   CORRUPTION.SEVERITY [5] \
   CORRUPTION.TYPE "['gaussian_noise','motion_blur','fog','contrast','jpeg_compression']" \
-  TEST.BATCH_SIZE 64 OPTIM.LR 3.2e-4 SAVE_DIR output/B/bs/bs064
+  TEST.BATCH_SIZE 64 OPTIM.LR 3.2e-4 SAVE_DIR ../output_B/bs/bs064
 
 # BS=128, LR=6.4e-4
 python cifar10c.py --cfg cfgs/tent.yaml MODEL.ARCH Standard \
   CORRUPTION.SEVERITY [5] \
   CORRUPTION.TYPE "['gaussian_noise','motion_blur','fog','contrast','jpeg_compression']" \
-  TEST.BATCH_SIZE 128 OPTIM.LR 6.4e-4 SAVE_DIR output/B/bs/bs128
+  TEST.BATCH_SIZE 128 OPTIM.LR 6.4e-4 SAVE_DIR ../output_B/bs/bs128
 
 # BS=200, LR=1e-3  (reference — must match A's tent on these 5 corruptions)
 python cifar10c.py --cfg cfgs/tent.yaml MODEL.ARCH Standard \
   CORRUPTION.SEVERITY [5] \
   CORRUPTION.TYPE "['gaussian_noise','motion_blur','fog','contrast','jpeg_compression']" \
-  TEST.BATCH_SIZE 200 OPTIM.LR 1e-3 SAVE_DIR output/B/bs/bs200
+  TEST.BATCH_SIZE 200 OPTIM.LR 1e-3 SAVE_DIR ../output_B/bs/bs200
 ```
 
 **Runtime note:** BS=8 is the most expensive run in this sweep. With 10,000
@@ -214,9 +214,9 @@ Expect ~25–40 min on T4. BS=200 yields 250 batches/corruption (~5 min).
 
 Before writing up, verify:
 ```
-mean error at output/B/bs/bs200 (5 corruptions)
+mean error at output_B/bs/bs200 (5 corruptions)
   ≈ mean of (gaussian_noise, motion_blur, fog, contrast, jpeg) rows
-    from output/A/Standard/tent/seed1
+    from output_A/Standard/tent/seed1
 ```
 If these differ by > 0.5pp, an override is wrong — re-check the command.
 
@@ -282,11 +282,11 @@ All runs use tent.yaml defaults for BS/LR (BS=200, LR=1e-3).
 
 | OPTIM.STEPS | SAVE_DIR |
 |---|---|
-| 1 | output/B/steps/steps01 |
-| 2 | output/B/steps/steps02 |
-| 4 | output/B/steps/steps04 |
-| 8 | output/B/steps/steps08 |
-| 16 | output/B/steps/steps16 |
+| 1 | output_B/steps/steps01 |
+| 2 | output_B/steps/steps02 |
+| 4 | output_B/steps/steps04 |
+| 8 | output_B/steps/steps08 |
+| 16 | output_B/steps/steps16 |
 
 The `STEPS=1` point is the same configuration as the reproduction tent run and the
 BS=200 point in Ablation 2 — all three must agree on the 5-corruption mean.
@@ -300,31 +300,31 @@ cd tent/
 python cifar10c.py --cfg cfgs/tent.yaml MODEL.ARCH Standard \
   CORRUPTION.SEVERITY [5] \
   CORRUPTION.TYPE "['gaussian_noise','motion_blur','fog','contrast','jpeg_compression']" \
-  OPTIM.STEPS 1 SAVE_DIR output/B/steps/steps01
+  OPTIM.STEPS 1 SAVE_DIR ../output_B/steps/steps01
 
 # STEPS=2
 python cifar10c.py --cfg cfgs/tent.yaml MODEL.ARCH Standard \
   CORRUPTION.SEVERITY [5] \
   CORRUPTION.TYPE "['gaussian_noise','motion_blur','fog','contrast','jpeg_compression']" \
-  OPTIM.STEPS 2 SAVE_DIR output/B/steps/steps02
+  OPTIM.STEPS 2 SAVE_DIR ../output_B/steps/steps02
 
 # STEPS=4
 python cifar10c.py --cfg cfgs/tent.yaml MODEL.ARCH Standard \
   CORRUPTION.SEVERITY [5] \
   CORRUPTION.TYPE "['gaussian_noise','motion_blur','fog','contrast','jpeg_compression']" \
-  OPTIM.STEPS 4 SAVE_DIR output/B/steps/steps04
+  OPTIM.STEPS 4 SAVE_DIR ../output_B/steps/steps04
 
 # STEPS=8
 python cifar10c.py --cfg cfgs/tent.yaml MODEL.ARCH Standard \
   CORRUPTION.SEVERITY [5] \
   CORRUPTION.TYPE "['gaussian_noise','motion_blur','fog','contrast','jpeg_compression']" \
-  OPTIM.STEPS 8 SAVE_DIR output/B/steps/steps08
+  OPTIM.STEPS 8 SAVE_DIR ../output_B/steps/steps08
 
 # STEPS=16
 python cifar10c.py --cfg cfgs/tent.yaml MODEL.ARCH Standard \
   CORRUPTION.SEVERITY [5] \
   CORRUPTION.TYPE "['gaussian_noise','motion_blur','fog','contrast','jpeg_compression']" \
-  OPTIM.STEPS 16 SAVE_DIR output/B/steps/steps16
+  OPTIM.STEPS 16 SAVE_DIR ../output_B/steps/steps16
 ```
 
 **Runtime note:** STEPS=16 is by far the heaviest run — 16 backward passes per
@@ -333,7 +333,7 @@ If time-pressed, cap at STEPS=8 or use `CORRUPTION.NUM_EX 2000` for the steps
 sweep to cut I/O time:
 ```bash
 # time-pressed fallback (2000 ex per corruption instead of 10000)
-CORRUPTION.NUM_EX 2000 OPTIM.STEPS 16 SAVE_DIR output/B/steps/steps16_2k
+CORRUPTION.NUM_EX 2000 OPTIM.STEPS 16 SAVE_DIR ../output_B/steps/steps16_2k
 ```
 The error trend (not the absolute values) is what matters for the ablation.
 
@@ -366,7 +366,7 @@ over-fitting the stream.
 ## Execution Order and Dependencies
 
 ```
-Reproduction completes → output/A/Standard/{source,norm,tent}/seed1/ exist
+Reproduction completes → output_A/Standard/{source,norm,tent}/seed1/ exist
          │
          ├── Ablation 1: zero extra runs; filter results CSV → chart + 2 paragraphs
          │

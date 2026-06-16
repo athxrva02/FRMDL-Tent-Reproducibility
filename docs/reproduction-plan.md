@@ -46,9 +46,9 @@ All in `tent/`:
   `TEST.BATCH_SIZE 128`, `OPTIM.LR 1e-3`, `OPTIM.STEPS 1`. Note `cfgs/tent.yaml` overrides
   `TEST.BATCH_SIZE` to **200** (and keeps `OPTIM.LR 1e-3`, `OPTIM.STEPS 1`).
 - `tent/cfgs/{source,norm,tent}.yaml` — base configs; override on the CLI rather than editing.
-- `tent/repro_a/` — reproducibility + analysis tooling already in the repo:
+- Project root — reproducibility + analysis tooling:
   `run_all.sh` (runner), `parse_logs.py` (log → tidy CSV), `make_tables.py` (CSV → tables/plots),
-  `Tent_Colab.ipynb` + `COLAB.md` (Colab Py3.8 env, Drive persistence, disconnect-resume).
+  `Tent_Colab.ipynb` (Colab Py3.8 env, Drive persistence, disconnect-resume).
 
 > **YACS gotcha (applies to every command below).** List overrides are coerced via
 > `literal_eval`, so string-valued lists need quoted elements:
@@ -73,10 +73,10 @@ One extra `tent` run at `RNG_SEED 2` gives a variance number.
 
 ```bash
 # from tent/
-python cifar10c.py --cfg cfgs/source.yaml MODEL.ARCH Standard CORRUPTION.SEVERITY [5] SAVE_DIR output/A/source
-python cifar10c.py --cfg cfgs/norm.yaml   MODEL.ARCH Standard CORRUPTION.SEVERITY [5] SAVE_DIR output/A/norm
-python cifar10c.py --cfg cfgs/tent.yaml   MODEL.ARCH Standard CORRUPTION.SEVERITY [5] SAVE_DIR output/A/tent
-python cifar10c.py --cfg cfgs/tent.yaml   MODEL.ARCH Standard CORRUPTION.SEVERITY [5] RNG_SEED 2 SAVE_DIR output/A/tent_seed2
+python cifar10c.py --cfg cfgs/source.yaml MODEL.ARCH Standard CORRUPTION.SEVERITY [5] SAVE_DIR ../output_A/source
+python cifar10c.py --cfg cfgs/norm.yaml   MODEL.ARCH Standard CORRUPTION.SEVERITY [5] SAVE_DIR ../output_A/norm
+python cifar10c.py --cfg cfgs/tent.yaml   MODEL.ARCH Standard CORRUPTION.SEVERITY [5] SAVE_DIR ../output_A/tent
+python cifar10c.py --cfg cfgs/tent.yaml   MODEL.ARCH Standard CORRUPTION.SEVERITY [5] RNG_SEED 2 SAVE_DIR ../output_A/tent_seed2
 ```
 
 **Deliverable:** one README-format severity-5 table (mean + per-corruption) for the three
@@ -112,7 +112,7 @@ runs on the 5-corruption subset.
 python cifar10c.py --cfg cfgs/tent.yaml MODEL.ARCH Standard \
   CORRUPTION.SEVERITY [5] \
   CORRUPTION.TYPE "['gaussian_noise','motion_blur','fog','contrast','jpeg_compression']" \
-  TEST.BATCH_SIZE 32 OPTIM.LR 1.6e-4 SAVE_DIR output/B/bs/bs032
+  TEST.BATCH_SIZE 32 OPTIM.LR 1.6e-4 SAVE_DIR ../output_B/bs/bs032
 ```
 
 **Deliverable:** mean-error vs. batch-size line plot; show the small-batch collapse and explain
@@ -125,7 +125,7 @@ short runs on the 5-corruption subset (BS/LR at `tent.yaml` defaults).
 python cifar10c.py --cfg cfgs/tent.yaml MODEL.ARCH Standard \
   CORRUPTION.SEVERITY [5] \
   CORRUPTION.TYPE "['gaussian_noise','motion_blur','fog','contrast','jpeg_compression']" \
-  OPTIM.STEPS 4 SAVE_DIR output/B/steps/steps04
+  OPTIM.STEPS 4 SAVE_DIR ../output_B/steps/steps04
 ```
 
 **Deliverable:** mean-error vs. steps line plot; show diminishing returns / over-adaptation as
