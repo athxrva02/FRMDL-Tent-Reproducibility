@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Parse upstream cifar10c.py logs into a tidy CSV (Student A, "Reproduced").
+"""Parse upstream cifar10c.py logs into a tidy CSV.
 
 cifar10c.py logs one line per (corruption, severity) in the form
     [..] [cifar10c.py:   50]: error % [gaussian_noise5]: 24.80%
@@ -126,9 +126,8 @@ def main():
         w.writerows(rows)
 
     print(f"[parse_logs] wrote {len(rows)} rows to {args.out}")
-    # Row count depends on scope, so we report it rather than assert a fixed
-    # number: Student A's reduced reproduction is 4 runs x 15 corruptions
-    # (severity 5) = 60 rows; Student B's ablation sweeps add more.
+    # Row count depends on scope: the reproduction set is 4 runs x 15 corruptions
+    # (severity 5) = 60 rows; ablation sweeps add more.
 
 
 if __name__ == "__main__":

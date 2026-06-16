@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 #
-# Student A — "Reproduced" criterion: re-run the three upstream Tent configs
-# end-to-end on WRN-28-10 (Standard) at severity 5, plus one extra tent run at
-# seed 2 for a variance number (4 runs total -- the reduced-scope plan).
+# Re-run the three upstream Tent configs end-to-end on WRN-28-10 (Standard) at
+# severity 5, plus one extra tent run at seed 2 for a variance number
+# (4 runs total).
 #
 # Runs on a CUDA machine (cifar10c.py calls .cuda() unconditionally). Each run
 # evaluates all 15 corruption types at severity 5 only (CORRUPTION.SEVERITY [5]
@@ -23,7 +23,7 @@
 #
 # Logs/results land under $OUT_ROOT/<arch>/<method>/seed<seed>/.
 # The RobustBench checkpoint downloads to ./ckpt and CIFAR-10-C to ./data on
-# first run -- Student A runs first and shares these populated dirs with B/C.
+# first run -- subsequent runs reuse the cached dirs.
 
 set -euo pipefail
 

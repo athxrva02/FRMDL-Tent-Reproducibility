@@ -2,7 +2,7 @@
 ## Tent: Fully Test-Time Adaptation by Entropy Minimization
 
 **Role:** Ablation study criterion  
-**Depends on:** Student A's output/A/ runs (Ablation 1 reuses them zero-cost; A must finish first)  
+**Depends on:** reproduction runs in `output/A/` (Ablation 1 reuses them zero-cost; reproduction must finish first)  
 **Compute:** ~11 short runs on a 5-corruption subset; ~1.5–2 h T4 wall-clock total
 
 ---
@@ -74,7 +74,7 @@ gradient. The entropy gradient is a real but modest incremental improvement.
 
 ### Data requirement
 
-Zero extra GPU runs. Student A's three outputs at severity 5 over 15 corruptions
+Zero extra GPU runs. The three reproduction outputs at severity 5 over 15 corruptions
 are all that is needed:
 
 ```
@@ -160,7 +160,7 @@ Formula: `LR = 1e-3 × BS / 200`.
 | 128 | 6.4e-4 | output/B/bs/bs128 |
 | 200 | 1e-3 | output/B/bs/bs200 |
 
-The `BS=200, LR=1e-3` point matches Student A's tent run on the same 5 corruptions
+The `BS=200, LR=1e-3` point matches the reproduction tent run on the same 5 corruptions
 and serves as the consistency check (both must give the same number).
 
 ### CLI commands (6 runs)
@@ -288,7 +288,7 @@ All runs use tent.yaml defaults for BS/LR (BS=200, LR=1e-3).
 | 8 | output/B/steps/steps08 |
 | 16 | output/B/steps/steps16 |
 
-The `STEPS=1` point is the same configuration as Student A's tent and the
+The `STEPS=1` point is the same configuration as the reproduction tent run and the
 BS=200 point in Ablation 2 — all three must agree on the 5-corruption mean.
 
 ### CLI commands (5 runs)
@@ -296,7 +296,7 @@ BS=200 point in Ablation 2 — all three must agree on the 5-corruption mean.
 ```bash
 cd tent/
 
-# STEPS=1  (reference, matches A's tent and B/bs/bs200)
+# STEPS=1  (reference, matches reproduction tent and bs/bs200)
 python cifar10c.py --cfg cfgs/tent.yaml MODEL.ARCH Standard \
   CORRUPTION.SEVERITY [5] \
   CORRUPTION.TYPE "['gaussian_noise','motion_blur','fog','contrast','jpeg_compression']" \
@@ -366,16 +366,16 @@ over-fitting the stream.
 ## Execution Order and Dependencies
 
 ```
-Student A completes → output/A/Standard/{source,norm,tent}/seed1/ exist
+Reproduction completes → output/A/Standard/{source,norm,tent}/seed1/ exist
          │
-         ├── Ablation 1: zero extra runs; filter A's CSV → chart + 2 paragraphs
+         ├── Ablation 1: zero extra runs; filter results CSV → chart + 2 paragraphs
          │
          └── Ablation 2 + 3: 11 short runs on 5-corruption subset (independent)
                               run in parallel across Colab accounts if needed
 ```
 
 Recommended run order to hit the consistency checks early:
-1. Run BS=200 (Ablation 2 reference) — quick, confirms env matches A
+1. Run BS=200 (Ablation 2 reference) — quick, confirms env matches reproduction
 2. Run STEPS=1 (Ablation 3 reference) — should give same number as BS=200
 3. Remaining 9 sweep points in any order (BS=8 and STEPS=16 are heaviest; schedule last)
 
@@ -387,7 +387,7 @@ Recommended run order to hit the consistency checks early:
 |---|---|
 | Ablation 1: norm−source gap | ~23pp mean on 5-corruption subset (consistent with 15-corruption result) |
 | Ablation 1: tent−norm gap | ~1–2pp mean (small but positive for all corruptions) |
-| Ablation 2: BS=200 vs A's tent | mean error on 5 corruptions agrees to <0.5pp |
+| Ablation 2: BS=200 vs reproduction tent | mean error on 5 corruptions agrees to <0.5pp |
 | Ablation 3: STEPS=1 vs BS=200 | same number (same config) — cross-check logs |
 | Ablation 2: BS=8 worse than norm | small-batch tent error > norm error (collapse) |
 | Ablation 3: STEPS=16 worse than STEPS=1 | degradation visible (may be small at BS=200) |
@@ -403,7 +403,7 @@ If BS=200 (Ablation 2) does not match A's tent on the same 5 corruptions, check:
 
 ```
 output/
-  A/                          (Student A — do not modify)
+  A/                          (reproduction results — do not modify)
     Standard/source/seed1/
     Standard/norm/seed1/
     Standard/tent/seed1/

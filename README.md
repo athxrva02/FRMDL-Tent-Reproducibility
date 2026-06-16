@@ -7,7 +7,6 @@ Reproduction of **"Tent: Fully Test-Time Adaptation by Entropy Minimization"**
 |---|---|
 | **Reproduced** | Headline table: source / norm / tent on WRN-28-10, severity 5, 15 corruptions |
 | **Ablation study** | Three ablations: BN-stat vs entropy · batch-size · update steps |
-| **New code variant** | Device-agnostic port of `tent/cifar10c.py` (CUDA-only → CPU/MPS/CUDA) |
 
 See [`docs/reproduction-plan.md`](docs/reproduction-plan.md) for the full task
 split and compute budget. See [`docs/student-b-ablation-plan.md`](docs/student-b-ablation-plan.md)
@@ -31,16 +30,15 @@ From the upstream [`tent/README.md`](tent/README.md) (severity-5 mean error %):
 ## Quickstart — Google Colab (recommended)
 
 Open **[`Tent_Colab.ipynb`](Tent_Colab.ipynb)** and run top to bottom. The notebook
-handles the Python-3.8 environment, Drive persistence, disconnect-resume, and all
-three students' experiments in one place:
+handles the Python-3.8 environment, Drive persistence, disconnect-resume, and all experiments in one place:
 
-| Notebook section | Cells | Student | What runs |
-|---|---|---|---|
-| Setup (GPU, Drive, repo, data) | 0–10 | shared | env + downloads |
-| Reproduction | 11–26 (approx) | A | 4 headline runs, tables, deviation report |
-| Ablation 1 — BN-stat vs entropy | 27–31 | B | analysis only (reuses A's logs) |
-| Ablation 2 — Batch-size sweep | 32–38 | B | 6 runs: BS ∈ {8,16,32,64,128,200} |
-| Ablation 3 — Update-steps sweep | 39–45 | B | 5 runs: STEPS ∈ {1,2,4,8,16} |
+| Notebook section | Cells | What runs |
+|---|---|---|
+| Setup (GPU, Drive, repo, data) | 0–10 | env + downloads |
+| Reproduction | 11–26 (approx) | 4 headline runs, tables, deviation report |
+| Ablation 1 — BN-stat vs entropy | 27–31 | analysis only (reuses reproduction logs) |
+| Ablation 2 — Batch-size sweep | 32–38 | 6 runs: BS ∈ {8,16,32,64,128,200} |
+| Ablation 3 — Update-steps sweep | 39–45 | 5 runs: STEPS ∈ {1,2,4,8,16} |
 
 > For Google Colab setup details (Python 3.8 venv, Drive symlinks, checkpoint
 > download workaround) see [`tent/repro_a/COLAB.md`](tent/repro_a/COLAB.md).
@@ -51,7 +49,7 @@ three students' experiments in one place:
 
 | Step | Where | Why |
 |---|---|---|
-| GPU runs (`run_all.sh`, ablation sweeps) | **Colab T4 / CUDA box** | `cifar10c.py` calls `.cuda()` unconditionally (until Student C's port lands); `torch==1.8.1` pinned — no Apple Silicon |
+| GPU runs (`run_all.sh`, ablation sweeps) | **Colab T4 / CUDA box** | `cifar10c.py` calls `.cuda()` unconditionally; `torch==1.8.1` pinned — no Apple Silicon |
 | Analysis (`parse_logs.py`, `make_tables.py`) | **anywhere — laptop OK** | Pure stdlib + pandas + matplotlib; no torch |
 
 ---
@@ -70,8 +68,7 @@ bash ../run_all.sh                       # full 4-run set: source/norm/tent @see
 
 Each run evaluates **all 15 corruptions at severity 5**. Logs land in
 `output/A/Standard/<method>/seed<seed>/`. The RobustBench checkpoint and CIFAR-10-C
-download to `./ckpt` and `./data` on first run — Student A runs first and shares
-these with B and C.
+download to `./ckpt` and `./data` on first run and are shared across all runs.
 
 ### Analyze (laptop)
 
@@ -107,7 +104,7 @@ fog  (weather)  ·  contrast  (digital)  ·  jpeg_compression  (digital)
 ### Ablation 1 — BN-stat vs Entropy Decomposition
 
 **Zero extra GPU runs.** Decomposes Tent's total improvement into two components
-using Student A's existing `source`/`norm`/`tent` outputs:
+using the existing `source`/`norm`/`tent` reproduction outputs:
 
 ```
 BN-stat gain  =  source_err − norm_err    (batch statistics replace training running stats)
@@ -133,7 +130,7 @@ python cifar10c.py --cfg cfgs/tent.yaml MODEL.ARCH Standard \
 
 | BS | LR | Expected |
 |---:|---|---|
-| 200 | 1e-3 | Reference — must match Student A tent on 5 corruptions |
+| 200 | 1e-3 | Reference — must match reproduction tent on 5 corruptions |
 | 128 | 6.4e-4 | Near-reference |
 | 64 | 3.2e-4 | Slight degradation |
 | 32 | 1.6e-4 | Noticeable degradation |
@@ -155,24 +152,13 @@ python cifar10c.py --cfg cfgs/tent.yaml MODEL.ARCH Standard \
 
 | STEPS | Backward passes / batch | Expected |
 |---:|---:|---|
-| 1 | 1 | Reference — must match Student A tent on 5 corruptions |
+| 1 | 1 | Reference — must match reproduction tent on 5 corruptions |
 | 2 | 2 | Comparable |
 | 4 | 4 | Degradation starts |
 | 8 | 8 | Clear degradation |
 | 16 | 16 | Max drift; may exceed `norm` baseline |
 
 **Output:** `output/B/steps/steps{NN}/` logs + `output/B/ablation3_steps.png`.
-
----
-
-## Student C — New Code Variant
-
-Device-agnostic port of `tent/cifar10c.py`: replaces the two unconditional
-`.cuda()` calls with `.to(device)`, adds a one-line device selector, and surfaces
-the chosen device in the log. `tent.py` and `norm.py` require no changes.
-
-After the port, the smoke test runs identically on a T4, a CPU box, and Apple
-Silicon — enabling local debugging without burning Colab GPU time.
 
 ---
 
@@ -199,21 +185,21 @@ output/
 
 ## Sanity checks
 
-### Student A
+### Reproduction
 - Smoke test completes in ~2 min and writes a log to `output/A/_smoke/`.
 - `tent` severity-5 mean ≈ **18.6 ± 1 pp** (`norm` ≈ 20.4, `source` ≈ 43.5).
   Gap >2 pp → investigate cuDNN/torch version (logged at top of every run by `conf.py`).
 - `results.csv` has **60 rows** for the full 4-run set (4 runs × 15 corruptions).
 - `deviation_report.md` flags nothing >2 pp on a clean reproduction.
 
-### Student B — three-way consistency check
+### Ablation consistency check
 
 The following three points all use the same effective config and must agree to
 within **0.5 pp** on the 5-corruption-subset mean error at severity 5:
 
 | Point | Location |
 |---|---|
-| Student A `tent` (5-corruption mean) | `output/A/results.csv` filtered to subset |
+| Reproduction `tent` (5-corruption mean) | `output/A/results.csv` filtered to subset |
 | Ablation 2 BS=200 | `output/B/bs/bs200/` |
 | Ablation 3 STEPS=1 | `output/B/steps/steps01/` |
 
@@ -233,13 +219,12 @@ Additional ablation signals:
   `CORRUPTION.TYPE "['gaussian_noise']"`, not `[gaussian_noise]`. Numeric lists
   like `CORRUPTION.SEVERITY [5]` need no inner quotes.
 - **`parse_logs.py`** recovers `arch`/`method`/`seed` from the directory layout
-  and from the YACS config dump in each log. Student C's extended version also
-  captures `TEST.BATCH_SIZE` and `OPTIM.STEPS` for the ablation sweeps.
+  and from the YACS config dump in each log. It also captures `TEST.BATCH_SIZE`
+  and `OPTIM.STEPS` for the ablation sweeps.
 - **No upstream code changes for A or B.** `cifar10c.py`, `tent.py`, `norm.py`,
-  and `conf.py` are untouched by A's runs and B's sweeps. Student C's port is
-  the only upstream edit, isolated on its own commits.
+  and `conf.py` are untouched by A's runs and B's sweeps.
 - **Critical path:** A → B (B's Ablation 1 reuses A's logs; B's sweeps need the
-  shared checkpoint and data). C runs in parallel throughout.
+  shared checkpoint and data).
 - **Colab time-boxing:** BS=8 (Ablation 2) and STEPS=16 (Ablation 3) are each
   ~25–40 min on a T4 — run them last or split across multiple Colab accounts.
   If pressed for time, cap the steps sweep at STEPS=8 or reduce

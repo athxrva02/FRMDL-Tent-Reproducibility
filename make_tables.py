@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Turn results.csv into Student A's "Reproduced" deliverables.
+"""Turn results.csv into the reproduction deliverables.
 
 Reads the tidy CSV from parse_logs.py and writes, into the output dir:
   - table_sev5_<arch>.md   README-format table (mean + 15 corruptions, sev 5)
