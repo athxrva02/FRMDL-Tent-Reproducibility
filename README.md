@@ -120,6 +120,7 @@ FRMDL-Tent-Reproducibility/
 │   ├── table_sev5_Standard.md
 │   ├── deviation_report.md
 │   ├── variance.md
+│   ├── severity_trend.md / .png
 │   └── ablation1_decomposition.png
 │
 └── output_B/             # ablation sweep outputs
