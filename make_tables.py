@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Turn results.csv into Student A's "Reproduced" deliverables.
+"""Turn results.csv into the reproduction deliverables.
 
 Reads the tidy CSV from parse_logs.py and writes, into the output dir:
   - table_sev5_<arch>.md   README-format table (mean + 15 corruptions, sev 5)
@@ -9,9 +9,9 @@ Reads the tidy CSV from parse_logs.py and writes, into the output dir:
 
 Pure analysis (pandas + matplotlib, no torch) -- runs locally on macOS.
 
-Usage (from tent/):
-    python repro_a/make_tables.py
-    python repro_a/make_tables.py --csv ./output/A/results.csv --out ./output/A
+Usage (from the project root):
+    python make_tables.py
+    python make_tables.py --csv ./output_A/results.csv --out ./output_A
 """
 import argparse
 import os
@@ -228,8 +228,8 @@ def write_deviation_report(df, seed, out_dir):
 def main():
     ap = argparse.ArgumentParser(description=__doc__,
                                  formatter_class=argparse.RawDescriptionHelpFormatter)
-    ap.add_argument("--csv", default="./output/A/results.csv")
-    ap.add_argument("--out", default="./output/A")
+    ap.add_argument("--csv", default="./output_A/results.csv")
+    ap.add_argument("--out", default="./output_A")
     ap.add_argument("--seed", type=str, default="1",
                     help="seed used for the headline tables/report (default 1)")
     args = ap.parse_args()
