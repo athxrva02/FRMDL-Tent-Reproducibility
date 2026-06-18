@@ -47,13 +47,13 @@ All ablations use WRN-28-10 Standard at severity 5 on a **5-corruption subset** 
 
 ### Ablation 1: BN-stat vs. Entropy Decomposition
 
-Tent's total improvement decomposes into two additive components using the existing reproduction runs; no extra GPU time.
+Tent's total improvement decomposes into two additive components using the full 15-corruption reproduction means (see table above); no extra GPU time.
 
 | Component | From → To | Gain (pp) | Share |
 |---|---|---:|---:|
-| BN-stat adaptation | source (42.0%) → norm (19.5%) | 22.5 | ~93% |
-| Entropy gradient | norm (19.5%) → tent (17.7%) | 1.8 | ~7% |
-| **Total** | source → tent | **24.3** | 100% |
+| BN-stat adaptation | source (43.5%) → norm (20.4%) | 23.1 | 92.8% |
+| Entropy gradient | norm (20.4%) → tent (18.6%) | 1.8 | 7.2% |
+| **Total** | source → tent | **24.9** | 100% |
 
 Nearly all of Tent's improvement comes from re-estimating BatchNorm statistics at test time rather than from the entropy gradient. The gradient update provides a consistent but modest incremental gain on top of the BN-stat correction.
 
@@ -115,7 +115,8 @@ FRMDL-Tent-Reproducibility/
 │   └── ablation-plan.md       # detailed ablation methodology
 │
 ├── output_A/             # reproduction outputs
-│   ├── Standard/{source,norm,tent}/seed{1,2}/   # raw logs
+│   ├── Standard/{source,norm}/seed1/            # raw logs (seed 1 only)
+│   ├── Standard/tent/seed{1,2}/                 # raw logs (seeds 1 and 2)
 │   ├── results.csv
 │   ├── table_sev5_Standard.md
 │   ├── deviation_report.md
